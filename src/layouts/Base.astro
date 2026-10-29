@@ -19,7 +19,8 @@ interface Props {
 const { title, description, image = home.heroImage, schema = [], section, noindex = false } = Astro.props;
 
 const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
-const canonical = absolute(Astro.url.pathname, Astro.site);
+// Astro.url.pathname already includes the base path, so don't run it through url() again.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
 // Google cuts titles around 60 characters: add the business name only when it fits.
 const suffix = ` | ${site.name}`;
 const fullTitle = title.includes(site.name) || title.length + suffix.length > 65 ? title : title + suffix;
