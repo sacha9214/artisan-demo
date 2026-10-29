@@ -1,4 +1,4 @@
-import { site, url } from './site';
+import { site, url, absolute } from './site';
 import { ICONS } from '../content.config';
 
 // Decap CMS configuration, shared by /admin/config.yml and the demo data script.
@@ -42,8 +42,8 @@ export function cmsConfig(siteUrl: URL | undefined) {
   return {
     locale: 'fr',
     backend,
-    site_url: siteUrl?.href,
-    display_url: siteUrl?.href,
+    site_url: absolute('/', siteUrl),
+    display_url: absolute('/', siteUrl),
     logo: { src: url('/favicon.svg'), show_in_header: true },
     media_folder: 'public/uploads',
     public_folder: '/uploads',
