@@ -1,0 +1,36 @@
+{
+  "seoTitle": "Plâtrier-peintre à Joué-lès-Tours et Tours",
+  "seoDescription": "Plâtrerie, plaques de plâtre, peinture intérieure et isolation à Tours, Joué-lès-Tours et dans un rayon de 30 km. Devis gratuit sous 48 h, assurance décennale.",
+  "heroTitle": "Des murs nets, des plafonds droits, des finitions qui durent.",
+  "heroText": "Cloisons, faux plafonds, enduits, peinture et isolation intérieure. Un seul artisan du devis à la dernière couche, à Joué-lès-Tours et 30 km autour.",
+  "heroImage": "https://images.unsplash.com/photo-1745665777586-09381ba528d6",
+  "heroImageAlt": "Peintre en tenue de travail appliquant une couche de peinture blanche sur un grand mur",
+  "highlights": [
+    { "title": "Devis gratuit sous 48 h", "text": "Visite sur place, devis détaillé poste par poste, sans engagement." },
+    { "title": "Assurance décennale", "text": "Vos travaux sont couverts dix ans. Attestation fournie avec le devis." },
+    { "title": "Chantier protégé et propre", "text": "Sols et meubles bâchés, gravats évacués, pièce rendue balayée." },
+    { "title": "Un seul interlocuteur", "text": "Julien suit votre chantier lui-même, du premier rendez-vous à la réception." }
+  ],
+  "aboutTitle": "Un artisan, pas un centre d'appels",
+  "aboutText": "Je m'appelle Julien Morel. Plâtrier-peintre depuis plus de quinze ans, j'ai créé Morel Finitions à Joué-lès-Tours en 2012.\n\nJe travaille seul ou avec un compagnon, ce qui me permet de tenir les délais annoncés et de soigner les détails qui se voient : angles bien droits, joints invisibles, peinture sans reprises.\n\nParticuliers, propriétaires bailleurs ou commerçants : je vous conseille sur les matériaux et les teintes, et je vous dis franchement quand une solution moins chère suffit.",
+  "aboutImage": "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26",
+  "aboutImageAlt": "Mains d'un plâtrier lissant un enduit frais sur un mur avec deux platoirs",
+  "steps": [
+    { "title": "Vous me contactez", "text": "Par téléphone ou avec le formulaire de devis. Je vous rappelle sous 24 h ouvrées." },
+    { "title": "Visite et devis", "text": "Je viens mesurer et voir l'existant. Devis détaillé sous 48 h." },
+    { "title": "Travaux", "text": "Date fixée ensemble, chantier protégé, point d'avancement chaque soir." },
+    { "title": "Réception", "text": "On fait le tour ensemble. Les retouches éventuelles sont faites avant la facture finale." }
+  ],
+  "testimonials": [
+    { "name": "Claire D.", "place": "Saint-Cyr-sur-Loire", "text": "Séjour et entrée refaits en huit jours, comme prévu. Les murs étaient très abîmés, on ne voit plus rien. Et la maison était propre chaque soir." },
+    { "name": "Marc et Sophie L.", "place": "Fondettes", "text": "Isolation et aménagement des combles : devis clair, aucun supplément surprise. Notre fille a enfin une vraie chambre, chaude l'hiver." },
+    { "name": "Boulangerie Petit", "place": "Tours", "text": "Travaux faits de nuit et le lundi pour ne pas fermer la boutique. Très arrangeant et très soigné." }
+  ],
+  "faq": [
+    { "q": "Le devis est-il vraiment gratuit ?", "a": "Oui. Je me déplace gratuitement dans toute ma zone d'intervention pour mesurer et voir l'existant, puis je vous envoie un devis détaillé sous 48 h, sans engagement." },
+    { "q": "Dans quelles communes intervenez-vous ?", "a": "À Joué-lès-Tours, Tours et dans un rayon d'environ 30 km : Saint-Cyr-sur-Loire, Saint-Avertin, Chambray-lès-Tours, Fondettes, Ballan-Miré, Montlouis-sur-Loire, etc. En dehors, appelez-moi : c'est souvent possible pour un chantier de plusieurs jours." },
+    { "q": "Quels sont vos délais ?", "a": "En général deux à six semaines entre la signature du devis et le début des travaux selon la saison. La durée du chantier est indiquée dans le devis." },
+    { "q": "Comment se passe le paiement ?", "a": "Un acompte de 30 % à la signature du devis, le solde à la réception des travaux. Virement, chèque ou espèces dans la limite légale." },
+    { "q": "Dois-je vider la pièce ?", "a": "Si possible, oui. Sinon, je regroupe et protège les meubles au centre de la pièce. Les sols sont toujours bâchés." }
+  ]
+}

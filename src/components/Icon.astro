@@ -1,0 +1,44 @@
+---
+import brickWall from 'lucide-static/icons/brick-wall.svg?raw';
+import paintRoller from 'lucide-static/icons/paint-roller.svg?raw';
+import thermometer from 'lucide-static/icons/thermometer.svg?raw';
+import layers from 'lucide-static/icons/layers.svg?raw';
+import hammer from 'lucide-static/icons/hammer.svg?raw';
+import paintbrush from 'lucide-static/icons/paintbrush.svg?raw';
+import house from 'lucide-static/icons/house.svg?raw';
+import ruler from 'lucide-static/icons/ruler.svg?raw';
+import phone from 'lucide-static/icons/phone.svg?raw';
+import mail from 'lucide-static/icons/mail.svg?raw';
+import mapPin from 'lucide-static/icons/map-pin.svg?raw';
+import check from 'lucide-static/icons/check.svg?raw';
+import clock from 'lucide-static/icons/clock.svg?raw';
+import shieldCheck from 'lucide-static/icons/shield-check.svg?raw';
+import arrowRight from 'lucide-static/icons/arrow-right.svg?raw';
+import calendar from 'lucide-static/icons/calendar.svg?raw';
+import x from 'lucide-static/icons/x.svg?raw';
+import chevronLeft from 'lucide-static/icons/chevron-left.svg?raw';
+import chevronRight from 'lucide-static/icons/chevron-right.svg?raw';
+import menu from 'lucide-static/icons/menu.svg?raw';
+import quote from 'lucide-static/icons/quote.svg?raw';
+import badgeCheck from 'lucide-static/icons/badge-check.svg?raw';
+import hardHat from 'lucide-static/icons/hard-hat.svg?raw';
+
+const icons: Record<string, string> = {
+  'brick-wall': brickWall, 'paint-roller': paintRoller, thermometer, layers, hammer, paintbrush, house, ruler,
+  phone, mail, 'map-pin': mapPin, check, clock, 'shield-check': shieldCheck, 'arrow-right': arrowRight, calendar,
+  x, 'chevron-left': chevronLeft, 'chevron-right': chevronRight, menu, quote, 'badge-check': badgeCheck, 'hard-hat': hardHat,
+};
+
+interface Props { name: string; size?: number; class?: string }
+const { name, size = 20, class: className = '' } = Astro.props;
+const raw = icons[name] ?? icons.check;
+// Only rewrite the outer <svg> tag: inner <rect> elements need their own width/height.
+const svg = raw
+  .replace(/<!--[\s\S]*?-->/g, '')
+  .replace(/<svg[^>]*>/, (tag) =>
+    tag
+      .replace(/\s(class|width|height)="[^"]*"/g, '')
+      .replace('<svg', `<svg class="icon ${className}" width="${size}" height="${size}" aria-hidden="true" focusable="false"`),
+  );
+---
+<Fragment set:html={svg} />

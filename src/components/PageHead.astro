@@ -1,0 +1,20 @@
+---
+import { url } from '../lib/site';
+
+interface Props { title: string; intro?: string; crumbs: { name: string; path: string }[] }
+const { title, intro, crumbs } = Astro.props;
+---
+<section class="page-head">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <ol>
+        {crumbs.map((c, i) => (
+          <li>{i < crumbs.length - 1 ? <a href={url(c.path)}>{c.name}</a> : <span aria-current="page">{c.name}</span>}</li>
+        ))}
+      </ol>
+    </nav>
+    <h1>{title}</h1>
+    {intro && <p>{intro}</p>}
+    <slot />
+  </div>
+</section>

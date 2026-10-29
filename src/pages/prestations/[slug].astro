@@ -1,0 +1,69 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import Icon from '../../components/Icon.astro';
+import Img from '../../components/Img.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { site, url, telHref } from '../../lib/site';
+import { breadcrumbSchema, serviceSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}
+
+const { service } = Astro.props;
+const { Content } = await render(service);
+const d = service.data;
+const projects = (await getCollection('realisations', (p) => p.data.service.id === service.id))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Prestations', path: '/prestations/' },
+  { name: d.title, path: `/prestations/${service.id}/` },
+];
+---
+<Base
+  title={d.seoTitle ?? `${d.title} à ${site.city}`}
+  description={d.seoDescription ?? d.summary}
+  image={d.image}
+  section="prestations"
+  schema={[breadcrumbSchema(Astro.site, crumbs), serviceSchema(Astro.site, { title: d.title, summary: d.summary, id: service.id })]}
+>
+  <PageHead title={d.title} intro={d.summary} crumbs={crumbs} />
+
+  <section class="container">
+    <Img class="service-hero-img" src={d.image} alt={d.imageAlt} width={1400} ratio={0.5} eager sizes="(min-width: 1160px) 1160px, 100vw" />
+    <div class="service-layout">
+      <article class="prose">
+        <Content />
+      </article>
+      <aside class="aside-card">
+        <h2>Ce que je réalise</h2>
+        <ul class="check-list">
+          {d.points.map((p) => <li><Icon name="check" size={18} />{p}</li>)}
+        </ul>
+        <p class="demo-note">Intervention à {site.areas.slice(0, 4).join(', ')} et {site.radiusKm} km autour.</p>
+        <a class="btn btn-accent" href={url(`/devis/?prestation=${service.id}`)}>Demander un devis</a>
+        <a class="btn btn-outline" href={telHref(site.phone)}><Icon name="phone" size={18} /> {site.phone}</a>
+      </aside>
+    </div>
+  </section>
+
+  {projects.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Réalisations</span>
+          <h2>Chantiers récents</h2>
+        </div>
+        <div class="grid-3">{projects.map((p) => <ProjectCard project={p} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <CtaBand title="Un devis pour vos travaux ?" text={`${d.title} : devis gratuit et détaillé sous 48 h, autour de ${site.city}.`} service={service.id} />
+</Base>

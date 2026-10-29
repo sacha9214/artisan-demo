@@ -1,0 +1,150 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import Icon from '../components/Icon.astro';
+import { site, home, url, telHref, img, absolute } from '../lib/site';
+import { businessSchema } from '../lib/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  /** Extra JSON-LD blocks for this page (breadcrumbs, service...). */
+  schema?: object[];
+  /** Current section, to highlight the nav link. */
+  section?: 'prestations' | 'realisations' | 'devis' | 'apropos';
+  noindex?: boolean;
+}
+const { title, description, image = home.heroImage, schema = [], section, noindex = false } = Astro.props;
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const canonical = absolute(Astro.url.pathname, Astro.site);
+// Google cuts titles around 60 characters: add the business name only when it fits.
+const suffix = ` | ${site.name}`;
+const fullTitle = title.includes(site.name) || title.length + suffix.length > 65 ? title : title + suffix;
+const ogImage = absolute(img(image, 1200, 630), Astro.site);
+const jsonLd = [businessSchema(Astro.site, services.map((s) => ({ title: s.data.title, id: s.id }))), ...schema];
+
+const nav = [
+  { href: '/prestations/', label: 'Prestations', key: 'prestations' },
+  { href: '/realisations/', label: 'Réalisations', key: 'realisations' },
+  { href: '/#a-propos', label: "L'artisan", key: 'apropos' },
+];
+// "08:00" -> "8 h", "08:30" -> "8 h 30"
+const hm = (t: string) => { const [h, m] = t.split(':'); return `${Number(h)} h${m && m !== '00' ? ` ${m}` : ''}`; };
+const openHours = site.hours.map((h) => `${h.label} : ${h.opens && h.closes ? `${hm(h.opens)} – ${hm(h.closes)}` : h.note}`);
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+    <meta name="theme-color" content="#1e2a2e" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    {jsonLd.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+    {site.demo && (
+      <div class="demo-banner" role="note">
+        Site de démonstration : {site.name} est une entreprise fictive. Photos Unsplash.
+        <a href={url('/admin/')}>Essayer l'espace de gestion</a>
+      </div>
+    )}
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href={url('/')} aria-label={`${site.name}, accueil`}>
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span class="brand-text">
+            <strong>{site.name}</strong>
+            <small>{site.trade} · {site.city}</small>
+          </span>
+        </a>
+
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">
+          <Icon name="menu" size={22} /><span class="visually-hidden">Menu</span>
+        </button>
+
+        <nav id="menu" class="site-nav" aria-label="Navigation principale">
+          <ul>
+            {nav.map((item) => (
+              <li><a href={url(item.href)} aria-current={section === item.key ? 'page' : undefined}>{item.label}</a></li>
+            ))}
+          </ul>
+          <a class="nav-phone" href={telHref(site.phone)}><Icon name="phone" size={18} />{site.phone}</a>
+          <a class="btn btn-accent btn-small" href={url('/devis/')} aria-current={section === 'devis' ? 'page' : undefined}>Devis gratuit</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenu">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <p class="footer-brand"><span class="brand-mark" aria-hidden="true">M</span> {site.name}</p>
+          <p>{site.tagline}.</p>
+          <address>
+            <a href={telHref(site.phone)}><Icon name="phone" size={16} /> {site.phone}</a><br />
+            <a href={`mailto:${site.email}`}><Icon name="mail" size={16} /> {site.email}</a><br />
+            <span><Icon name="map-pin" size={16} /> {site.showAddress && site.street ? `${site.street}, ` : ''}{site.postalCode} {site.city}</span>
+          </address>
+        </div>
+        <div>
+          <h2 class="footer-title">Prestations</h2>
+          <ul class="footer-links">
+            {services.map((s) => <li><a href={url(`/prestations/${s.id}/`)}>{s.data.title}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <h2 class="footer-title">Horaires</h2>
+          <ul class="footer-links">{openHours.map((h) => <li>{h}</li>)}</ul>
+          <h2 class="footer-title">Zone d'intervention</h2>
+          <p class="footer-small">{site.areas.slice(0, 8).join(', ')} et {site.radiusKm} km autour de {site.city}.</p>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© {new Date().getFullYear()} {site.name} · SIRET {site.siret}</span>
+        <span>
+          <a href={url('/mentions-legales/')}>Mentions légales</a>
+          {site.creditLabel && <> · <a href={site.creditUrl} rel="noopener">{site.creditLabel}</a></>}
+        </span>
+      </div>
+    </footer>
+
+    <div class="mobile-cta" aria-label="Contact rapide">
+      <a class="btn btn-ghost-light" href={telHref(site.phone)}><Icon name="phone" size={18} /> Appeler</a>
+      <a class="btn btn-accent" href={url('/devis/')}>Devis gratuit</a>
+    </div>
+
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+      const menu = document.getElementById('menu');
+      const setOpen = (open: boolean) => {
+        toggle?.setAttribute('aria-expanded', String(open));
+        menu?.classList.toggle('is-open', open);
+      };
+      toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+      // Same-page anchors (#a-propos) don't reload the page, so close the menu ourselves.
+      menu?.addEventListener('click', (e) => { if ((e.target as Element).closest('a')) setOpen(false); });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Img from './Img.astro';
+import { url } from '../lib/site';
+
+interface Props { service: CollectionEntry<'services'> }
+const { service } = Astro.props;
+const { title, summary, image, imageAlt, icon } = service.data;
+---
+<a class="service-card" href={url(`/prestations/${service.id}/`)}>
+  <Img src={image} alt={imageAlt} width={400} ratio={1.1} sizes="(min-width: 640px) 180px, 100vw" />
+  <div class="service-card-body">
+    <Icon name={icon} size={26} />
+    <h3>{title}</h3>
+    <p>{summary}</p>
+    <span class="link-arrow">En savoir plus <Icon name="arrow-right" size={16} /></span>
+  </div>
+</a>

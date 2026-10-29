@@ -1,0 +1,264 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Icon from '../components/Icon.astro';
+import { site, url, telHref } from '../lib/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const crumbs = [{ name: 'Accueil', path: '/' }, { name: 'Demande de devis', path: '/devis/' }];
+const endpoint = site.formEndpoint.trim();
+const hours = site.hours.filter((h) => h.opens && h.closes).map((h) => `${h.label}, ${Number(h.opens.split(':')[0])} h – ${Number(h.closes.split(':')[0])} h`);
+---
+<Base
+  title={`Devis gratuit plâtrerie et peinture à ${site.city}`}
+  description={`Demandez un devis gratuit pour vos travaux de plâtrerie, peinture ou isolation à ${site.city} et alentour. Réponse sous 24 h ouvrées.`}
+  section="devis"
+  schema={[breadcrumbSchema(Astro.site, crumbs)]}
+>
+  <PageHead
+    title="Demande de devis gratuit"
+    intro="Décrivez votre projet en deux minutes. Je vous rappelle sous 24 h ouvrées pour fixer une visite."
+    crumbs={crumbs}
+  />
+
+  <section class="container form-layout" style="padding-bottom: 4rem">
+    <div class="quote-form">
+      <form
+        id="quote"
+        action={endpoint || undefined}
+        method="POST"
+        data-endpoint={endpoint}
+        data-access-key={site.formAccessKey}
+      >
+        <fieldset>
+          <legend>Vos travaux</legend>
+          <div class="field" id="field-prestations">
+            <span class="label" id="label-prestations">Type de travaux <span class="hint">(plusieurs choix possibles)</span></span>
+            <div class="choice-grid" role="group" aria-labelledby="label-prestations">
+              {services.map((s) => (
+                <label class="choice"><input type="checkbox" name="prestations" value={s.data.title} data-slug={s.id} /> {s.data.title}</label>
+              ))}
+              <label class="choice"><input type="checkbox" name="prestations" value="Autre" /> Autre</label>
+            </div>
+            <span class="field-error" data-error-for="prestations"></span>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="commune">Commune du chantier</label>
+              <input id="commune" name="commune" list="communes" autocomplete="address-level2" required />
+              <datalist id="communes">{site.areas.map((a) => <option value={a} />)}</datalist>
+              <span class="field-error" data-error-for="commune"></span>
+            </div>
+            <div class="field">
+              <label for="bien">Type de bien</label>
+              <select id="bien" name="bien">
+                <option>Maison</option>
+                <option>Appartement</option>
+                <option>Local professionnel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="surface">Surface approximative <span class="hint">(m², facultatif)</span></label>
+              <input id="surface" name="surface" type="number" inputmode="numeric" min="1" max="5000" />
+              <span class="field-error" data-error-for="surface"></span>
+            </div>
+            <div class="field">
+              <label for="delai">Quand souhaitez-vous commencer ?</label>
+              <select id="delai" name="delai">
+                <option>Dès que possible</option>
+                <option>Dans 1 à 3 mois</option>
+                <option>Dans plus de 3 mois</option>
+                <option>Je ne sais pas encore</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="message">Votre projet</label>
+            <textarea id="message" name="message" required minlength="20" placeholder="Ex. : repeindre un séjour de 30 m² et reprendre deux fissures au plafond."></textarea>
+            <span class="field-error" data-error-for="message"></span>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Vos coordonnées</legend>
+          <div class="field-row">
+            <div class="field">
+              <label for="nom">Nom et prénom</label>
+              <input id="nom" name="nom" autocomplete="name" required />
+              <span class="field-error" data-error-for="nom"></span>
+            </div>
+            <div class="field">
+              <label for="telephone">Téléphone</label>
+              <input id="telephone" name="telephone" type="tel" autocomplete="tel" inputmode="tel" required />
+              <span class="field-error" data-error-for="telephone"></span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="email">E-mail <span class="hint">(facultatif)</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" />
+              <span class="field-error" data-error-for="email"></span>
+            </div>
+            <div class="field">
+              <label for="rappel">Meilleur moment pour vous appeler</label>
+              <select id="rappel" name="rappel">
+                <option>Peu importe</option>
+                <option>Le matin</option>
+                <option>Le midi</option>
+                <option>En fin de journée</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="consent">
+              <input type="checkbox" name="consentement" value="oui" required />
+              <span>J'accepte que mes informations soient utilisées uniquement pour répondre à ma demande. Elles ne sont ni revendues ni utilisées pour de la publicité (<a href={url('/mentions-legales/#donnees')}>en savoir plus</a>).</span>
+            </label>
+            <span class="field-error" data-error-for="consentement"></span>
+          </div>
+        </fieldset>
+
+        <!-- Spam traps: humans never see these fields. "_gotcha" is Formspree's name, "botcheck" Web3Forms'. -->
+        <div class="hp" aria-hidden="true">
+          <label>Ne pas remplir <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+          <input type="checkbox" name="botcheck" tabindex="-1" />
+        </div>
+        <input type="hidden" name="_subject" value={`Demande de devis — ${site.name}`} />
+        <input type="hidden" name="subject" value={`Demande de devis — ${site.name}`} />
+
+        <button class="btn btn-accent" type="submit">Envoyer ma demande <Icon name="arrow-right" size={18} /></button>
+        <p class="form-status" role="alert"></p>
+        {!endpoint && <p class="demo-note">Démo : le formulaire n'envoie rien tant qu'aucune adresse de réception n'est réglée dans l'espace de gestion.</p>}
+      </form>
+
+      <div class="form-success" hidden tabindex="-1">
+        <Icon name="badge-check" size={48} />
+        <h2>Merci, votre demande est bien partie</h2>
+        <p>Je vous rappelle sous 24 h ouvrées. Pour une urgence : <a href={telHref(site.phone)}>{site.phone}</a>.</p>
+        <dl></dl>
+      </div>
+    </div>
+
+    <aside class="contact-card">
+      <h2>Plutôt par téléphone ?</h2>
+      <a href={telHref(site.phone)}><Icon name="phone" size={20} /> {site.phone}</a>
+      <ul>
+        {hours.map((h) => <li><Icon name="clock" size={18} />{h}</li>)}
+        <li><Icon name="map-pin" size={18} />{site.city} et {site.radiusKm} km autour</li>
+        <li><Icon name="shield-check" size={18} />{site.insurance}</li>
+        <li><Icon name="calendar" size={18} />Visite et devis gratuits, sans engagement</li>
+      </ul>
+    </aside>
+  </section>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#quote')!;
+  const success = document.querySelector<HTMLElement>('.form-success')!;
+  const status = form.querySelector<HTMLElement>('.form-status')!;
+  const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  form.noValidate = true; // our messages replace the browser's; without JS, native validation still applies
+
+  // Pre-tick the service when coming from a service page (?prestation=peinture).
+  const pre = new URLSearchParams(location.search).get('prestation');
+  form.querySelectorAll<HTMLInputElement>('input[name="prestations"]').forEach((c) => {
+    if (c.dataset.slug && c.dataset.slug === pre) c.checked = true;
+  });
+
+  const errorEl = (name: string) => form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+  const setError = (name: string, message: string) => {
+    const el = errorEl(name);
+    if (el) el.textContent = message;
+    form.querySelectorAll<HTMLInputElement>(`[name="${name}"]`).forEach((input) => {
+      if (input.type === 'checkbox' && name === 'prestations') return;
+      input.setAttribute('aria-invalid', message ? 'true' : 'false');
+      if (el) el.id = `err-${name}`;
+      message ? input.setAttribute('aria-describedby', `err-${name}`) : input.removeAttribute('aria-describedby');
+    });
+  };
+
+  function validate() {
+    const data = new FormData(form);
+    const errors: Record<string, string> = {};
+    if (!data.getAll('prestations').length) errors.prestations = 'Cochez au moins un type de travaux.';
+    if (!String(data.get('commune')).trim()) errors.commune = 'Indiquez la commune du chantier.';
+    const surface = String(data.get('surface')).trim();
+    if (surface && !(Number(surface) > 0 && Number(surface) <= 5000)) errors.surface = 'Indiquez une surface en m² (ex. : 30).';
+    if (String(data.get('message')).trim().length < 20) errors.message = 'Décrivez votre projet en quelques mots (20 caractères minimum).';
+    if (!String(data.get('nom')).trim()) errors.nom = 'Indiquez votre nom.';
+    const phone = String(data.get('telephone')).replace(/[\s.\-()]/g, '');
+    if (!/^(\+33|0033|0)[1-9]\d{8}$/.test(phone)) errors.telephone = 'Indiquez un numéro français à 10 chiffres (ex. : 06 12 34 56 78).';
+    const email = String(data.get('email')).trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Cette adresse e-mail n'a pas l'air valide.";
+    if (!data.get('consentement')) errors.consentement = 'Merci de cocher cette case pour que je puisse vous répondre.';
+
+    ['prestations', 'commune', 'surface', 'message', 'nom', 'telephone', 'email', 'consentement'].forEach((n) => setError(n, errors[n] ?? ''));
+    const first = Object.keys(errors)[0];
+    if (first) form.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
+    return !first;
+  }
+
+  function showSuccess(data: FormData, demo: boolean) {
+    const labels: Record<string, string> = { prestations: 'Travaux', commune: 'Commune', bien: 'Bien', surface: 'Surface (m²)', delai: 'Début souhaité', nom: 'Nom', telephone: 'Téléphone', email: 'E-mail', rappel: 'Rappel' };
+    const dl = success.querySelector('dl')!;
+    dl.replaceChildren();
+    Object.entries(labels).forEach(([key, label]) => {
+      const value = data.getAll(key).map(String).filter(Boolean).join(', ');
+      if (!value) return;
+      const dt = document.createElement('dt'); dt.textContent = label;
+      const dd = document.createElement('dd'); dd.textContent = value;
+      dl.append(dt, dd);
+    });
+    if (demo) {
+      const note = document.createElement('p');
+      note.className = 'demo-note';
+      note.textContent = "Mode démo : rien n'a été envoyé. Voici ce que l'artisan recevrait.";
+      dl.before(note);
+    }
+    form.hidden = true;
+    success.hidden = false;
+    success.focus();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.classList.remove('is-error');
+    if (!validate()) return;
+
+    const data = new FormData(form);
+    // Bots fill hidden fields: pretend it worked and drop the message.
+    if (data.get('_gotcha') || data.get('botcheck')) return showSuccess(data, false);
+
+    const endpoint = form.dataset.endpoint;
+    if (!endpoint) return showSuccess(data, true);
+
+    if (form.dataset.accessKey) data.set('access_key', form.dataset.accessKey);
+    data.set('prestations', data.getAll('prestations').join(', '));
+    submit.disabled = true;
+    submit.textContent = 'Envoi en cours…';
+    try {
+      const res = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(String(res.status));
+      showSuccess(data, false);
+    } catch {
+      status.classList.add('is-error');
+      status.textContent = "L'envoi n'a pas fonctionné. Réessayez dans un instant ou appelez-moi directement.";
+      submit.disabled = false;
+      submit.textContent = 'Envoyer ma demande';
+    }
+  });
+
+  // Clear an error as soon as the field is corrected.
+  form.addEventListener('input', (e) => {
+    const name = (e.target as HTMLInputElement).name;
+    if (errorEl(name)?.textContent) setError(name, '');
+  });
+</script>

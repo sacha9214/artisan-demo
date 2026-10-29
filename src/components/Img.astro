@@ -1,0 +1,31 @@
+---
+import { img, srcset } from '../lib/site';
+
+interface Props {
+  src: string;
+  alt: string;
+  /** Rendered width used for the default src, and to derive the height from ratio. */
+  width?: number;
+  /** height / width, e.g. 0.75 for 4:3. */
+  ratio?: number;
+  sizes?: string;
+  eager?: boolean;
+  /** Load right away without raising priority (e.g. images in hidden tabs). */
+  noLazy?: boolean;
+  class?: string;
+}
+const { src, alt, width = 800, ratio = 0.75, sizes = '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw', eager = false, noLazy = false, class: className } = Astro.props;
+const height = Math.round(width * ratio);
+---
+<img
+  src={img(src, width, height)}
+  srcset={srcset(src, ratio)}
+  sizes={sizes}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={eager || noLazy ? 'eager' : 'lazy'}
+  fetchpriority={eager ? 'high' : undefined}
+  decoding="async"
+  class={className}
+/>

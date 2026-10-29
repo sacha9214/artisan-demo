@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content';
+import { marked } from 'marked';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Img from '../components/Img.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site, home, url, telHref, yearsActive } from '../lib/site';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const serviceTitle = Object.fromEntries(services.map((s) => [s.id, s.data.title]));
+const projects = (await getCollection('realisations')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const featured = [...projects.filter((p) => p.data.featured), ...projects.filter((p) => !p.data.featured)].slice(0, 6);
+const latest = projects[0];
+const highlightIcons = ['calendar', 'shield-check', 'hard-hat', 'badge-check'];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: home.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+---
+<Base title={home.seoTitle} description={home.seoDescription} schema={[faqSchema]}>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">{site.trade} · {site.city} et {site.radiusKm} km autour</span>
+        <h1>{home.heroTitle}</h1>
+        <p class="lead">{home.heroText}</p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href={url('/devis/')}>Demander un devis gratuit <Icon name="arrow-right" size={18} /></a>
+          <a class="btn btn-outline" href={telHref(site.phone)}><Icon name="phone" size={18} /> {site.phone}</a>
+        </div>
+        <ul class="hero-trust">
+          <li><Icon name="check" size={18} /> Depuis {site.founded}</li>
+          <li><Icon name="check" size={18} /> Assurance décennale</li>
+          <li><Icon name="check" size={18} /> Réponse sous 24 h</li>
+        </ul>
+      </div>
+      <div class="hero-media">
+        <Img src={home.heroImage} alt={home.heroImageAlt} width={900} ratio={1.25} eager sizes="(min-width: 860px) 46vw, 100vw" />
+        {latest && (
+          <a class="hero-card" href={url(`/realisations/${latest.id}/`)}>
+            <Img src={latest.data.cover} alt="" width={120} ratio={1} sizes="56px" />
+            <span><small>Dernier chantier · {latest.data.commune}</small><strong>{latest.data.title}</strong></span>
+          </a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="container" aria-label="Nos engagements">
+    <div class="highlights">
+      {home.highlights.map((h, i) => (
+        <div class="highlight">
+          <Icon name={highlightIcons[i % highlightIcons.length]} size={26} />
+          <h3>{h.title}</h3>
+          <p>{h.text}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section" id="prestations">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Prestations</span>
+        <h2>Tout ce qui touche aux murs et aux plafonds</h2>
+        <p>Du gros œuvre intérieur à la dernière couche de peinture, sans multiplier les intervenants.</p>
+      </div>
+      <div class="grid-2">
+        {services.map((s) => <ServiceCard service={s} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-white">
+    <div class="container">
+      <div class="section-head-row">
+        <div class="section-head">
+          <span class="eyebrow">Réalisations</span>
+          <h2>Des chantiers près de chez vous</h2>
+          <p>Quelques travaux récents à {site.areas.slice(0, 3).join(', ')} et alentour.</p>
+        </div>
+        <a class="btn btn-outline" href={url('/realisations/')}>Voir toutes les réalisations</a>
+      </div>
+      <div class="grid-3">
+        {featured.map((p) => <ProjectCard project={p} serviceTitle={serviceTitle[p.data.service.id]} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-ink">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Comment ça se passe</span>
+        <h2>Quatre étapes, aucune surprise</h2>
+      </div>
+      <ol class="steps">
+        {home.steps.map((s) => <li><h3>{s.title}</h3><p>{s.text}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="a-propos">
+    <div class="container about-grid">
+      <Img src={home.aboutImage} alt={home.aboutImageAlt} width={800} ratio={1} sizes="(min-width: 860px) 45vw, 100vw" />
+      <div>
+        <span class="eyebrow">L'artisan</span>
+        <h2>{home.aboutTitle}</h2>
+        <div class="prose" set:html={marked.parse(home.aboutText)} />
+        <div class="stats">
+          <div><strong>{yearsActive()} ans</strong><span>d'activité à {site.city}</span></div>
+          <div><strong>{site.areas.length}</strong><span>communes desservies</span></div>
+          <div><strong>48 h</strong><span>pour recevoir votre devis</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-white">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Avis clients</span>
+        <h2>Ils m'ont confié leurs travaux</h2>
+      </div>
+      <div class="grid-3">
+        {home.testimonials.map((t) => (
+          <figure class="testimonial">
+            <Icon name="quote" size={26} />
+            <blockquote><p>{t.text}</p></blockquote>
+            <figcaption>{t.name}<span>{t.place}</span></figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="zone">
+    <div class="container zone-grid">
+      <div>
+        <span class="eyebrow">Zone d'intervention</span>
+        <h2>{site.city}, Tours et {site.radiusKm} km autour</h2>
+        <p>Je me déplace gratuitement pour la visite et le devis dans toutes ces communes. Vous êtes un peu plus loin ? Appelez-moi, c'est souvent possible.</p>
+        <a class="link-arrow" href={telHref(site.phone)}><Icon name="phone" size={16} /> {site.phone}</a>
+      </div>
+      <ul class="chips">
+        {site.areas.map((a) => <li class={a === site.city ? 'is-base' : undefined}>{a}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section-white">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Questions fréquentes</span>
+        <h2>Avant de vous lancer</h2>
+      </div>
+      <div class="faq">
+        {home.faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>

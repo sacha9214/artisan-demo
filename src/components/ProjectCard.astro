@@ -1,0 +1,18 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Img from './Img.astro';
+import { url } from '../lib/site';
+
+interface Props { project: CollectionEntry<'realisations'>; serviceTitle?: string; eager?: boolean }
+const { project, serviceTitle, eager = false } = Astro.props;
+const { title, commune, cover, coverAlt } = project.data;
+---
+<a class="project-card" href={url(`/realisations/${project.id}/`)} data-service={project.data.service.id}>
+  <Img src={cover} alt={coverAlt} width={800} ratio={0.75} eager={eager} />
+  {serviceTitle && <span class="tag">{serviceTitle}</span>}
+  <div class="project-card-body">
+    <small><Icon name="map-pin" size={14} />{commune}</small>
+    <h3>{title}</h3>
+  </div>
+</a>

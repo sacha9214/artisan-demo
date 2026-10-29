@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+import { site, url, telHref } from '../lib/site';
+
+interface Props { title?: string; text?: string; service?: string }
+const {
+  title = 'Un projet de travaux ?',
+  text = `Devis gratuit et détaillé sous 48 h, partout autour de ${site.city}.`,
+  service,
+} = Astro.props;
+---
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>{title}</h2>
+        <p>{text}</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-white" href={url(`/devis/${service ? `?prestation=${service}` : ''}`)}>Demander un devis</a>
+        <a class="btn btn-ghost-light" href={telHref(site.phone)}><Icon name="phone" size={18} /> {site.phone}</a>
+      </div>
+    </div>
+  </div>
+</section>

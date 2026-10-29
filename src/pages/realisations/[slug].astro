@@ -1,0 +1,162 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import Icon from '../../components/Icon.astro';
+import Img from '../../components/Img.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { url, img, formatDate } from '../../lib/site';
+import { breadcrumbSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('realisations');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+const service = await getEntry(d.service);
+const photos = [{ image: d.cover, alt: d.coverAlt }, ...(d.gallery ?? [])];
+const before = d.before?.image ? { image: d.before.image, alt: d.before.alt || 'Avant les travaux' } : null;
+const others = (await getCollection('realisations', (p) => p.id !== project.id))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Réalisations', path: '/realisations/' },
+  { name: d.title, path: `/realisations/${project.id}/` },
+];
+---
+<Base
+  title={`${d.title} à ${d.commune}`}
+  description={`${d.summary} Chantier réalisé à ${d.commune}.`}
+  image={d.cover}
+  section="realisations"
+  schema={[breadcrumbSchema(Astro.site, crumbs)]}
+>
+  <PageHead title={`${d.title} à ${d.commune}`} intro={d.summary} crumbs={crumbs}>
+    <ul class="project-meta">
+      <li><Icon name="map-pin" size={18} />{d.commune}</li>
+      <li><Icon name="calendar" size={18} />{formatDate(d.date)}</li>
+      {d.surface && <li><Icon name="ruler" size={18} />{d.surface}</li>}
+      {d.duration && <li><Icon name="clock" size={18} />{d.duration}</li>}
+      {service && <li><a class="tag" href={url(`/prestations/${service.id}/`)}>{service.data.title}</a></li>}
+    </ul>
+  </PageHead>
+
+  <section class="container">
+    <div class="photo-grid" data-gallery data-count={Math.min(photos.length, 3)}>
+      {photos.map((p, i) => (
+        <button type="button" class={i === 0 && photos.length > 2 ? 'is-main' : undefined} data-full={img(p.image, 1800)} data-alt={p.alt} aria-label={`Agrandir la photo : ${p.alt}`}>
+          <Img src={p.image} alt={p.alt} width={i === 0 ? 1200 : 600} ratio={0.75} eager={i === 0} sizes={i === 0 ? '(min-width: 640px) 66vw, 100vw' : '(min-width: 640px) 33vw, 50vw'} />
+        </button>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container service-layout">
+      <article class="prose">
+        <h2>Le chantier</h2>
+        <Content />
+      </article>
+      {before && (
+        <aside class="before-after" aria-label="Comparer avant et après">
+          <div class="ba-tabs" role="tablist">
+            <button type="button" role="tab" id="tab-after" aria-controls="panel-after" aria-selected="true">Après</button>
+            <button type="button" role="tab" id="tab-before" aria-controls="panel-before" aria-selected="false" tabindex="-1">Avant</button>
+          </div>
+          <div class="ba-panel" role="tabpanel" id="panel-after" aria-labelledby="tab-after">
+            <Img src={d.cover} alt={d.coverAlt} width={700} ratio={0.625} sizes="(min-width: 900px) 380px, 100vw" />
+            <p>{d.coverAlt}</p>
+          </div>
+          <div class="ba-panel" role="tabpanel" id="panel-before" aria-labelledby="tab-before" hidden>
+            <Img src={before.image} alt={before.alt} width={700} ratio={0.625} sizes="(min-width: 900px) 380px, 100vw" noLazy />
+            <p>{before.alt}</p>
+          </div>
+        </aside>
+      )}
+    </div>
+  </section>
+
+  <section class="section section-white">
+    <div class="container">
+      <div class="section-head-row">
+        <div class="section-head"><span class="eyebrow">Autres chantiers</span><h2>Ça pourrait vous inspirer</h2></div>
+        <a class="btn btn-outline" href={url('/realisations/')}>Toutes les réalisations</a>
+      </div>
+      <div class="grid-3">{others.map((p) => <ProjectCard project={p} />)}</div>
+    </div>
+  </section>
+
+  <CtaBand title={`Des travaux similaires à ${d.commune} ou alentour ?`} service={service?.id} />
+
+  <dialog class="lightbox" aria-label="Photo agrandie">
+    <div class="lightbox-inner">
+      <figure><img alt="" /><figcaption></figcaption></figure>
+    </div>
+    <button class="lb-btn lb-close" type="button" aria-label="Fermer"><Icon name="x" size={24} /></button>
+    <button class="lb-btn lb-prev" type="button" aria-label="Photo précédente"><Icon name="chevron-left" size={26} /></button>
+    <button class="lb-btn lb-next" type="button" aria-label="Photo suivante"><Icon name="chevron-right" size={26} /></button>
+  </dialog>
+</Base>
+
+<script>
+  // Lightbox: native <dialog> gives focus trapping and Escape-to-close for free.
+  const triggers = [...document.querySelectorAll<HTMLButtonElement>('[data-gallery] button')];
+  const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
+  if (dialog && triggers.length) {
+    const image = dialog.querySelector('img')!;
+    const caption = dialog.querySelector('figcaption')!;
+    const multi = triggers.length > 1;
+    dialog.querySelectorAll<HTMLElement>('.lb-prev, .lb-next').forEach((b) => (b.hidden = !multi));
+    let index = 0;
+
+    const show = (i: number) => {
+      index = (i + triggers.length) % triggers.length;
+      const t = triggers[index];
+      image.src = t.dataset.full!;
+      image.alt = t.dataset.alt!;
+      caption.textContent = multi ? `${t.dataset.alt} (${index + 1}/${triggers.length})` : t.dataset.alt!;
+    };
+
+    triggers.forEach((t, i) => t.addEventListener('click', () => { show(i); dialog.showModal(); }));
+    dialog.querySelector('.lb-close')!.addEventListener('click', () => dialog.close());
+    dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(index - 1));
+    dialog.querySelector('.lb-next')!.addEventListener('click', () => show(index + 1));
+    dialog.addEventListener('click', (e) => { if (e.target === dialog || (e.target as Element).classList.contains('lightbox-inner')) dialog.close(); });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(index - 1);
+      if (e.key === 'ArrowRight') show(index + 1);
+    });
+    dialog.addEventListener('close', () => triggers[index]?.focus());
+
+    // Swipe on phones.
+    let startX: number | null = null;
+    dialog.addEventListener('pointerdown', (e) => (startX = e.clientX));
+    dialog.addEventListener('pointerup', (e) => {
+      if (startX !== null && multi && Math.abs(e.clientX - startX) > 50) show(index + (e.clientX < startX ? 1 : -1));
+      startX = null;
+    });
+  }
+
+  // Before / after tabs, with arrow-key support (WAI-ARIA tabs pattern).
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('.ba-tabs [role="tab"]')];
+  const select = (tab: HTMLButtonElement) => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !on;
+    });
+    tab.focus();
+  };
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t));
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') select(tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length]);
+    });
+  });
+</script>

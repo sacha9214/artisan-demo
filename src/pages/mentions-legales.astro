@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { site } from '../lib/site';
+
+const crumbs = [{ name: 'Accueil', path: '/' }, { name: 'Mentions légales', path: '/mentions-legales/' }];
+---
+<Base title="Mentions légales et données personnelles" description={`Mentions légales du site ${site.name} et politique de protection des données personnelles.`}>
+  <PageHead title="Mentions légales" crumbs={crumbs} />
+  <section class="container" style="padding-bottom: 4rem">
+    <div class="prose">
+      {site.demo && <p><strong>Site de démonstration.</strong> {site.name} est une entreprise fictive : les informations ci-dessous sont des exemples à remplacer.</p>}
+
+      <h2>Éditeur du site</h2>
+      <p>
+        {site.name}, entreprise individuelle de {site.owner}<br />
+        {site.showAddress && site.street ? <>{site.street}, </> : null}{site.postalCode} {site.city}<br />
+        SIRET : {site.siret}<br />
+        Téléphone : {site.phone} · E-mail : <a href={`mailto:${site.email}`}>{site.email}</a><br />
+        Directeur de la publication : {site.owner}
+      </p>
+      <p>{site.insurance}.</p>
+
+      <h2>Hébergement</h2>
+      <p>{site.host}</p>
+
+      <h2 id="donnees">Données personnelles</h2>
+      <p>
+        Les informations envoyées avec le formulaire de devis (nom, téléphone, e-mail, commune et description des travaux)
+        servent uniquement à répondre à votre demande et à établir un devis. Elles sont destinées à {site.owner} et ne
+        sont ni revendues ni utilisées à des fins publicitaires.
+      </p>
+      <p>
+        Elles sont conservées trois ans au plus après notre dernier échange, puis supprimées. Si un devis est signé, les
+        documents comptables sont conservés dix ans, comme la loi l'impose.
+      </p>
+      <p>
+        Vous pouvez demander l'accès, la correction ou la suppression de vos données en écrivant à
+        <a href={`mailto:${site.email}`}>{site.email}</a>. En cas de difficulté, vous pouvez saisir la CNIL
+        (<a href="https://www.cnil.fr/fr/plaintes" rel="noopener">cnil.fr/fr/plaintes</a>).
+      </p>
+
+      <h2>Cookies et mesure d'audience</h2>
+      <p>Ce site ne dépose aucun cookie publicitaire et n'utilise aucun outil de suivi. Aucun bandeau de consentement n'est donc nécessaire.</p>
+
+      <h2>Crédits</h2>
+      <p>Photos : Unsplash (licence Unsplash). {site.creditLabel && <>Conception : <a href={site.creditUrl} rel="noopener">{site.creditLabel.replace(/^Site réalisé par /, '')}</a>.</>}</p>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { site } from '../../lib/site';
+import { breadcrumbSchema } from '../../lib/schema';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const serviceTitle = Object.fromEntries(services.map((s) => [s.id, s.data.title]));
+const projects = (await getCollection('realisations')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const used = services.filter((s) => projects.some((p) => p.data.service.id === s.id));
+const crumbs = [{ name: 'Accueil', path: '/' }, { name: 'Réalisations', path: '/realisations/' }];
+---
+<Base
+  title="Réalisations : plâtrerie, peinture et isolation près de Tours"
+  description={`Photos de chantiers récents à ${site.areas.slice(0, 4).join(', ')} : cloisons, faux plafonds, peinture, isolation et rénovation.`}
+  section="realisations"
+  schema={[breadcrumbSchema(Astro.site, crumbs)]}
+>
+  <PageHead
+    title="Réalisations"
+    intro={`${projects.length} chantiers récents, photographiés à la fin des travaux. Filtrez par type de prestation.`}
+    crumbs={crumbs}
+  />
+
+  <section class="container" style="padding-bottom: 2rem">
+    <div class="filters" role="group" aria-label="Filtrer par prestation">
+      <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">Tout voir ({projects.length})</button>
+      {used.map((s) => (
+        <button class="filter-btn" type="button" data-filter={s.id} aria-pressed="false">
+          {s.data.title} ({projects.filter((p) => p.data.service.id === s.id).length})
+        </button>
+      ))}
+    </div>
+    <p class="visually-hidden" aria-live="polite" id="filter-status"></p>
+    <div class="grid-3 project-grid">
+      {projects.map((p, i) => <ProjectCard project={p} serviceTitle={serviceTitle[p.data.service.id]} eager={i < 3} />)}
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<script>
+  // Filters are progressive: without JS every project stays visible.
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const cards = document.querySelectorAll<HTMLElement>('.project-grid [data-service]');
+  const status = document.getElementById('filter-status');
+
+  function apply(filter: string) {
+    let shown = 0;
+    cards.forEach((card) => {
+      const match = filter === 'all' || card.dataset.service === filter;
+      card.hidden = !match;
+      if (match) shown++;
+    });
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+    if (status) status.textContent = `${shown} réalisation${shown > 1 ? 's' : ''} affichée${shown > 1 ? 's' : ''}`;
+    const params = new URLSearchParams(location.search);
+    filter === 'all' ? params.delete('prestation') : params.set('prestation', filter);
+    history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}`);
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter!)));
+  const initial = new URLSearchParams(location.search).get('prestation');
+  if (initial && [...buttons].some((b) => b.dataset.filter === initial)) apply(initial);
+</script>

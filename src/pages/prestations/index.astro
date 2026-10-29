@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { site } from '../../lib/site';
+import { breadcrumbSchema } from '../../lib/schema';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const crumbs = [{ name: 'Accueil', path: '/' }, { name: 'Prestations', path: '/prestations/' }];
+---
+<Base
+  title={`Plâtrerie, peinture et isolation à ${site.city}`}
+  description={`Plâtrerie, peinture intérieure, isolation et rénovation à ${site.city}, Tours et ${site.radiusKm} km autour. Devis gratuit sous 48 h.`}
+  section="prestations"
+  schema={[breadcrumbSchema(Astro.site, crumbs)]}
+>
+  <PageHead
+    title="Prestations"
+    intro={`Murs, plafonds, cloisons et isolation intérieure : ce que je réalise pour les particuliers et les professionnels autour de ${site.city}.`}
+    crumbs={crumbs}
+  />
+  <section class="container" style="padding-bottom: 2rem">
+    <div class="grid-2">
+      {services.map((s) => <ServiceCard service={s} />)}
+    </div>
+  </section>
+  <CtaBand />
+</Base>
