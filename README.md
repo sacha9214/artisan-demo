@@ -43,11 +43,11 @@ The admin fields are defined in `src/lib/cms.ts`, and the matching validation li
 
 ## Demo mode vs. a real client
 
-With `"demo": true` in `site.json`, the admin uses Decap's in-memory `test-repo` backend. Visitors can click "Se connecter" and try everything; nothing is saved, and a reload resets it. That's what makes the live demo useful in a sales pitch.
+With `"demo": true` in `site.json`, every page is marked `noindex` (a fictional business must not appear in Google, where real customers would try to reach it), and the admin uses Decap's in-memory `test-repo` backend. Visitors can click "Se connecter" and try everything; nothing is saved, and a reload resets it. That's what makes the live demo useful in a sales pitch.
 
 To turn this into a real client site:
 
-1. **Replace the content.** Business details go in `site.json`. Use real photos, real projects and **real testimonials only**: fake reviews are illegal in France (*pratique commerciale trompeuse*). Set `"demo": false` and clear `creditLabel` if the client doesn't want the credit.
+1. **Replace the content.** Business details go in `site.json`. Use real photos, real projects and **real testimonials only**: fake reviews are illegal in France (*pratique commerciale trompeuse*). Set `"demo": false` (this also lets Google index the site) and clear `creditLabel` if the client doesn't want the credit.
 2. **Quote form.** Create a free form on [Web3Forms](https://web3forms.com) (paste the access key into `formAccessKey`) or on [Formspree](https://formspree.io). Then put the endpoint URL in `formEndpoint`. While `formEndpoint` is empty, the form runs in demo mode and sends nothing.
 3. **Admin login.** Build with the GitHub backend:
    ```bash
