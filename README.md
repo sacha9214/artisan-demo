@@ -58,17 +58,37 @@ To turn this into a real client site:
    - **Anywhere else:** run a small OAuth proxy and pass its URL as `CMS_AUTH_URL`. See the [Decap docs on backends](https://decapcms.org/docs/backends-overview/).
 
    Each save from the admin becomes a Git commit, and the host rebuilds the site in about a minute.
-4. **Domain and Google.**
-   - Buy the domain **in the client's name**. Point it at the host, then set `SITE_URL`.
+4. **Domain, hosting and Google.**
+   - Buy the domain **in the client's name**, at their own registrar account (OVH, Gandi, IONOS…).
+   - Host the site on a **Cloudflare Pages or Netlify account created with the client's email**, not on yours. See [Hosting a client site](#hosting-a-client-site).
+   - Point the domain at the host, then set `SITE_URL`.
    - Create or claim the client's **Google Business Profile**, and put its URL in `googleBusinessUrl`.
    - Submit `sitemap-index.xml` in Google Search Console.
-5. **Legal notice.** Check `/mentions-legales/`: SIRET, insurance, host. The data section assumes the only personal data collected is the quote form.
+5. **Legal notice.** Check `/mentions-legales/`: SIRET, insurance, and the `host` setting (the real host, e.g. Cloudflare, Inc. or Netlify, Inc.). The data section assumes the only personal data collected is the quote form.
 
-### Running cost for the client
+### Hosting a client site
 
-Hosting on Netlify, Cloudflare Pages or GitHub Pages is free at this size. Forms are free up to the provider's monthly limit. That leaves only the domain, about 10 to 15 € a year, which is a strong selling point against WordPress hosting and its maintenance.
+Everything goes **in the client's name**: the domain, the hosting account and the form key. The site then belongs to them, and they keep it if they change provider. Hand over the access and the code in writing.
 
-### Deploying under a sub-path (GitHub Pages project site)
+| Host (free tier) | Client sites? | Why |
+|---|---|---|
+| **Cloudflare Pages** | ✅ Recommended | No commercial-use restriction found (secondary sources only; check the current terms). |
+| **Netlify** | ✅ On the **client's own** account | The free plan allows commercial projects. But Netlify staff say a site you **bill a client for** and host on **your** free account needs Pro ([forum](https://answers.netlify.com/t/can-we-use-netlify-free-plan-for-commercial-purposes/41545/2)). It also provides the OAuth endpoint for the admin login. |
+| **GitHub Pages** | ❌ Demos and portfolio only | "Not … allowed to be used as a free web-hosting service to run your online business" ([GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)). |
+| **Vercel Hobby** | ❌ | Non-commercial personal use only ([fair-use guidelines](https://vercel.com/docs/limits/fair-use-guidelines)). |
+
+Checked on 29 Oct 2026. Hosting terms change, so re-read them before each new client.
+
+**Running cost for the client:**
+- Hosting is free at this size on the hosts above.
+- Forms are free up to the provider's monthly limit.
+- The domain costs about 10 to 15 € a year.
+
+That's a strong selling point against WordPress hosting and its maintenance. A professional email address (`contact@client.fr`) is extra, from the registrar, at a few euros a month.
+
+### Deploying under a sub-path (GitHub Pages project site, for demos)
+
+This is how this demo is published. Don't use it for client sites (see above).
 
 ```bash
 SITE_URL=https://user.github.io BASE_PATH=/repo-name npm run build
